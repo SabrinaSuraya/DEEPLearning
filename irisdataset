@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 31 14:48:28 2022
+
+@author: sabri
+
+In this example, we will be using the famous iris flower dataset.
+Sci-kit learn has a specific method that allows us to import the dataset
+directly. We will make use of this dataset to do an example of deep learning
+training.
+
+For machine learning, for supervised learning, there will be 2 mojor steps involved:
+    1. Defining your input pipeline
+        a. Read data files
+        b. Perform data preprocessing
+            i. Data cleaning
+            ii. Train-test / Train-validation-test splits
+            iii. Data normalization / Feature scaling
+            
+    2. Defining your model pipeline
+        a. Create the deep learning model;
+        b. Train with training data
+        c. Fine tune your model until it reaches your satisfaction
+        
+"""
+import sklearn.datasets as skdatasets
+from sklearn import preprocessing
+import tensorflow as tf 
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+#train & test split
+(iris_features, iris_labels)= skdatasets.load_iris(return_X_y=True, as_frame=True)
+SEED=12345
+x_train, x_test, y_train, y_test= train_test_split(iris_features, iris_labels, test_size=0.2, random_state=SEED)
+x_train_np= np.array(x_train)
+x_test_np= np.array(x_test)
+nClass = len(np.unique(y_test))
+
+#data normalization
+
+normalize = layers.Normalization()
+normalize.adapt(x_train)
+
+#Define model
+
+model= keras.Sequential()
+model.add(normalize)
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(32, activation='relu'))
+model.add(layers.Dense(nClass, activation= 'sigmoid'))#OUTPUT LAYER
+
+#Compile model
+
+model.compile(optimizer= 'adam', loss= 'sparse_categorical_crossentropy', metrics= ['accuracy'])
+
+#Perform model training
+epochs=10
+history= model.fit(x_train, y_train, validation_data= (x_test, y_test), batch_size= 16, epochs=epochs)
+
+#Visualisation on model training
+import matplotlib.pyplot as plt
+
+training_loss= history.history['loss']
+val_loss = history.history['val_loss']
+training_acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+epochs= history.epoch
+plt.plot(epochs, training_loss, label='Training loss')
+plt.plot(epochs, val_loss, label='Validation loss')
+plt.title("Training vs Validation Loss")
+plt.legend()
+plt.figure()
+
+plt.plot(epochs, training_acc, label='Training Accuracy')
+plt.plot(epochs, val_acc, label='Validation Accuracy')
+plt.title("Training vs Validation Accuracy")
+plt.legend()
+plt.figure()
+
+plt.show()
+
+
+
+
