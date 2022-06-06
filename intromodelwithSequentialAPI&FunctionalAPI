@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 31 14:24:14 2022
+
+@author: sabri
+"""
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+
+#Construct FeedForward NN with Sequential API
+model= keras.Sequential()
+model.add(layers.Dense(3, activation= 'sigmoid'))
+model.add(layers.Dense(1))
+
+x= tf.constant([[4,3,2]])
+y= model(x)
+
+model.summary()
+#%%
+# Use the functional API
+
+#2 Build model with Fuctional API
+
+inputs= keras.Input(shape=(3,))
+layer1= layers.Dense(3, activation= 'sigmoid')
+layer2= layers.Dense(1)
+
+x= layer1(inputs)
+outputs= layer2(x)
+
+model= keras.Model(inputs= inputs, outputs=outputs)
+
+x= tf.constant([[4,3,2]])
+y= model(x)
+print(y)
+model.summary()
