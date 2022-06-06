@@ -12,6 +12,9 @@ it will call the functions when the model is undergoing training.
 There are two callback functions that we commonly use:
     1. EarlyStopping --> to introduce early stopping technique
     2. TensorBoard --> to create a visualization UI for the training process
+    
+   # include this in anaconda prompt 
+   --logdir "C:\Users\sabri\Documents\PYTHON\DL\TensorBoard\tb_logs"
 """
 
 import sklearn.datasets as skdatasets
