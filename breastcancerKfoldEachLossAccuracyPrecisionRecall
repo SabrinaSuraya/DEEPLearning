@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jun  2 09:38:16 2022
+
+@author: sabri
+
+CLASSIFICATION PROBLEM
+KFOLD=5
+3LAYER
+LOSS, PRECISION, ACCURACY, RECALL FOR EACH FOLD
+functional API-model
+
+K-fold cross validation allows us to basically create multiple combinations
+of train-test split for your data. This essentially allow us to test our model
+multiple times with just one of set of data.
+"""
+
+import sklearn.datasets as skdatasets
+from sklearn import preprocessing
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers, optimizers, losses, metrics
+import numpy as np
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.preprocessing import StandardScaler
+
+#2. Data Preparation 
+#Import the data from sklearn
+(bc_features, bc_labels)= skdatasets.load_breast_cancer(return_X_y=True, as_frame=True)
+
+#3. Prepare K-Fold data 
+SEED= 12345
+kfold = KFold(n_splits=5, shuffle=True, random_state=SEED)
+
+#4. Define your model
+nIn = bc_features.shape[-1]
+nClass = len(np.unique(bc_labels))
+inputs = keras.Input(shape=(nIn,))
+h1 = layers.Dense(64, activation='relu')
+h2 = layers.Dense(32, activation='relu')
+h3 = layers.Dense(16, activation='relu')
+out = layers.Dense(1, activation='sigmoid')
+x = h1(inputs)
+x = h2(x)
+x = h3(x)
+outputs = out(x)
+model = keras.Model(inputs=inputs, outputs=outputs)
+#%%
+
+#5. Use a for loop to loop through the KFold, for each fold, you will perform 
+
+#model training and evaluation, then save the result for each fold
+optimizer = optimizers.Adam(learning_rate=0.0001)
+loss = losses.BinaryCrossentropy(from_logits=False)
+accuracy = metrics.BinaryAccuracy()
+precision = metrics.Precision()
+recall = metrics.Recall()
+
+#Create empty list to hold the individual results from each training
+loss_list = []
+acc_list = []
+precision_list = []
+recall_list = []
+features = np.array(bc_features)
+labels = np.array(bc_labels)
+fold_no = 1
+
+for train, test in kfold.split(features, labels):
+    #Compile model
+    model.compile(optimizer=optimizer, loss=loss, metrics=[accuracy, precision,recall])
+    #Perform model training
+    print('###############################################################################')
+    print(f'Training for fold number {fold_no} ...')
+    history = model.fit(features[train],labels[train], batch_size=16, epochs=10)
+    #Generate the scores
+    scores = model.evaluate(features[test], labels[test])
+    print(f'Score for fold {fold_no}:')
+    loss_list.append(scores[0])
+    acc_list.append(scores[1])
+    precision_list.append(scores[2])
+    recall_list.append(scores[3])
+    
+    for metric_name, score in zip(model.metrics_names, scores):
+        print(f'{metric_name} : {scores}')
+    fold_no +=1
+    keras.backend.clear_session()
+#%%  
+  
+#6. Print the average scores
+print('Average Loss: ', np.mean(loss_list))
+print('Average Accuracy: ', np.mean(acc_list))
+print('Average Precision: ', np.mean(precision_list))
+print('Average Recall: ', np.mean(recall_list))
+
+
+
