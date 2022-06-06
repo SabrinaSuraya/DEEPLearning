@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  1 16:32:41 2022
+
+@author: sabri
+
+
+For early stopping, we will be using callback functions in TensorFlow.
+Callbacks are special function that you can include in model.fit(), such that
+it will call the functions when the model is undergoing training.
+
+There are two callback functions that we commonly use:
+    1. EarlyStopping --> to introduce early stopping technique
+    2. TensorBoard --> to create a visualization UI for the training process
+"""
+
+import sklearn.datasets as skdatasets
+from sklearn import preprocessing
+import tensorflow as tf 
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
+import datetime, os
+
+(iris_features, iris_labels)= skdatasets.load_iris(return_X_y=True, as_frame=True)
+
+#train & test split
+
+SEED=12345
+x_train, x_test, y_train, y_test= train_test_split(iris_features, iris_labels, test_size=0.2, random_state=SEED)
+
+#DAta normalisation
+standardizer = StandardScaler()
+standardizer.fit(x_train)
+x_train= standardizer.transform(x_train)
+x_test= standardizer.transform(x_test)
+
+#build mode fro regression 
+model= keras.Sequential()
+model.add(layers.Dense(128, activation='relu'))
+model.add(layers.Dense(62, activation='relu'))
+model.add(layers.Dense(32, activation='relu'))
+model.add(layers.Dense(16, activation='relu'))
+model.add(layers.Dense(1))# 1 node for regression, no activation 
+
+# compile
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+
+#, define callback function 
+base_log_path= r"C:\Users\sabri\Documents\PYTHON\DL\tb_logs"
+log_path= os.path.join(base_log_path, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+es= EarlyStopping(monitor='val_loss',patience=10)
+tb= TensorBoard(log_dir= log_path)
+
+# Train model
+history=model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=16, epochs=500, callbacks=[es,tb])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
