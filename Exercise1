@@ -1,0 +1,79 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 31 16:17:04 2022
+
+@author: sabri
+EXERCISE 1
+1- USE BREAST CANCER DATASETD FROM SKLEARN TO BUILD A FEEDFORWORD NN.
+2- PERFORM NECESSARY DATA PREPARATION STEPS
+3- CONSTRUCT A FEEDFORWARD NN WITH 3 HIDDEN LAYERS(NUMBER OF NODES UP TO YOU)
+"""
+
+import sklearn.datasets as skdatasets
+from sklearn import preprocessing
+import tensorflow as tf 
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+#load datasets
+
+(breast_cancer_features, breast_cancer_labels)= skdatasets.load_breast_cancer(return_X_y=True, as_frame=True)
+
+
+#train and test split
+SEED=12345
+x_train, x_test, y_train, y_test= train_test_split(breast_cancer_features, breast_cancer_labels, test_size=0.2, random_state=SEED)
+
+
+#data normalization
+standardizer = StandardScaler()
+standardizer.fit(x_train)
+x_train= standardizer.transform(x_train)
+x_test= standardizer.transform(x_test)
+nClass= len(np.unique(y_test))
+
+
+#Define feedforward NN model with 3 hidden layer
+
+model= keras.Sequential()
+
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(32, activation='relu'))
+model.add(layers.Dense(16, activation='relu'))
+model.add(layers.Dense(nClass, activation= 'softmax'))# output layer
+
+#Compile model
+
+model.compile(optimizer= 'adam', loss= 'sparse_categorical_crossentropy', metrics= ['accuracy'])
+
+#Perform model training
+batch_size= 16
+epochs=10
+history= model.fit(x_train, y_train, validation_data= (x_test, y_test), batch_size= batch_size, epochs=epochs)
+
+#Visualisation on model training
+import matplotlib.pyplot as plt
+
+training_loss= history.history['loss']
+val_loss = history.history['val_loss']
+training_acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+epochs= history.epoch
+
+plt.plot(epochs, training_loss, label='Training loss')
+plt.plot(epochs, val_loss, label='Validation loss')
+plt.title("Training vs Validation Loss")
+plt.legend()
+plt.figure()
+
+plt.plot(epochs, training_acc, label='Training Accuracy')
+plt.plot(epochs, val_acc, label='Validation Accuracy')
+plt.title("Training vs Validation Accuracy")
+plt.legend()
+plt.figure()
+
+plt.show()
+
