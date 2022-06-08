@@ -1,2 +1,2 @@
 # DEEPLearning
-use Python as programming language, Spyder as software
+use Python as programming language, Spyder and TensorFlow as software
